@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .menu-container {
+            position: fixed;
+            top: 50%;
+            left: 50px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 250px;
+            z-index: 9999;
+        }
+
+        .scroll-background {
+            position: fixed;
+            left: 20px;
+            width: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            z-index: 9997;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            left: 20px;
+            width: 20px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            z-index: 9998;
+        }
+
+        .version-box {
+            position: fixed;
+            left: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            min-width: 250px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-align: center;
+            z-index: 9999;
+        }
+        
+        .menu-title {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .menu-option {
+            color: white;
+            padding: 8px 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+        }
+        
+        .menu-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-option.selected {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-option-text {
+            margin-left: 10px;
+        }
+
+        .version-container {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-background"></div>
+    <div class="scroll-indicator"></div>
+    <div class="menu-container">
+        <div class="menu-title">SECOVCE MENU</div>
+        <div class="menu-option" data-index="0" onclick="handleButton('settings')">
+            <span class="menu-option-text">Nastavenia</span>
+        </div>
+        <div class="menu-option" data-index="1" onclick="handleButton('profile')">
+            <span class="menu-option-text">Profil</span>
+        </div>
+        <div class="menu-option" data-index="2" onclick="handleButton('tasks')">
+            <span class="menu-option-text">Úlohy</span>
+        </div>
+        <div class="menu-option" data-index="3" onclick="handleButton('inventory')">
+            <span class="menu-option-text">Inventár</span>
+        </div>
+        <div class="menu-option" data-index="4" onclick="handleButton('phone')">
+            <span class="menu-option-text">Telefón</span>
+        </div>
+    </div>
+    <div class="version-box">Version 1.0.0</div>
+    <button class="close-btn" onclick="closeMenu()">X</button>
+
+    <script>
+        // Position version box below main menu
+        const mainMenu = document.querySelector('.menu-container');
+        const versionBox = document.querySelector('.version-box');
+        
+        function updateVersionPosition() {
+            const menuRect = mainMenu.getBoundingClientRect();
+            versionBox.style.top = (menuRect.bottom + 10) + 'px';
+        }
+        
+        // Initial position
+        updateVersionPosition();
+        // Update position when window resizes
+        window.addEventListener('resize', updateVersionPosition);
+    </script>
+    
+    <script>
+        function closeMenu() {
+            if (window.invokeNative) {
+                window.invokeNative('0x9D4FDBB035229BE9', 'close');
+            }
+        }
+
+        let currentIndex = 0;
+        const menuOptions = document.querySelectorAll('.menu-option');
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+
+        function handleButton(option, index = null) {
+            // Remove selected class from all options
+            menuOptions.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // If index is provided, use it, otherwise get from clicked element
+            if (index !== null) {
+                currentIndex = index;
+                menuOptions[currentIndex].classList.add('selected');
+            } else {
+                event.currentTarget.classList.add('selected');
+                currentIndex = parseInt(event.currentTarget.dataset.index);
+            }
+
+            // Update scroll indicator position
+            updateScrollIndicator();
+            
+            console.log('Selected option:', option);
+            if (window.invokeNative) {
+                window.invokeNative('0x9D4FDBB035229BE9', option);
+            }
+        }
+
+        function updateScrollIndicator() {
+            const selectedOption = menuOptions[currentIndex];
+            const optionRect = selectedOption.getBoundingClientRect();
+            const menuRect = mainMenu.getBoundingClientRect();
+            
+            // Update scroll indicator position
+            scrollIndicator.style.top = optionRect.top + 'px';
+            scrollIndicator.style.height = optionRect.height + 'px';
+            
+            // Update background height to match menu
+            const scrollBackground = document.querySelector('.scroll-background');
+            scrollBackground.style.top = menuRect.top + 'px';
+            scrollBackground.style.height = menuRect.height + 'px';
+        }
+
+        function handleKeyNavigation(e) {
+            if (e.key === 'ArrowUp' && currentIndex > 0) {
+                handleButton('option' + (currentIndex), currentIndex - 1);
+            } else if (e.key === 'ArrowDown' && currentIndex < menuOptions.length - 1) {
+                handleButton('option' + (currentIndex + 2), currentIndex + 1);
+            } else if (e.key === 'Enter') {
+                handleButton('option' + (currentIndex + 1), currentIndex);
+            } else if (e.key === 'Escape') {
+                closeMenu();
+            }
+        }
+
+        // Set initial selection
+        handleButton('option1', 0);
+        
+        // Add keyboard listener
+        document.addEventListener('keydown', handleKeyNavigation);
+        
+        document.body.style.display = 'block';
+        document.querySelector('.menu-container').style.display = 'block';
+        
+        // Update scroll indicator position on window resize
+        window.addEventListener('resize', updateScrollIndicator);
+
+        console.log('DUI loaded successfully');
+    </script>
+</body>
+</html>

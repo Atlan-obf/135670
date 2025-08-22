@@ -1,0 +1,47 @@
+local MenuSize = vec2(500, 300)
+local MenuStartCoords = vec2(520, 300)
+local TabsBarWidth = 180 
+local dui = nil -- Store DUI handle
+
+MenuWindow = MachoMenuTabbedWindow("Secovce", MenuStartCoords.x, MenuStartCoords.y, MenuSize.x, MenuSize.y, TabsBarWidth)
+MachoMenuSetAccent(MenuWindow, 63, 44, 127) -- Hex farba
+
+
+MachoMenuSmallText(MenuWindow, "@Padre | Beta ")
+
+local Tab1 = MachoMenuAddTab(MenuWindow, "Selection") -- Taby
+local Tab2 = MachoMenuAddTab(MenuWindow, "Settings")
+
+
+local function getCenteredPositions()
+    local sectionWidth = 150 
+    local sectionHeight = 283
+    local gap = 8 
+    local totalWidth = sectionWidth * 2 + gap
+    local startX = (MenuSize.x - TabsBarWidth - totalWidth) / 2 + TabsBarWidth
+    local y = 10 
+    return startX, startX + sectionWidth + gap, y, sectionWidth, sectionHeight
+end
+
+local x1, x2, y, sectionWidth, sectionHeight = getCenteredPositions()
+
+
+local SectionOne = MachoMenuGroup(Tab1, "Select", x1, y, x1 + sectionWidth, y + sectionHeight)
+
+
+MachoMenuButton(SectionOne, "a1", function()
+
+end)
+  
+
+local SectionTwo = MachoMenuGroup(Tab1, "Pick", x2, y, x2 + sectionWidth, y + sectionHeight)
+
+local SectionThree = MachoMenuGroup(Tab2, "Setting", x1, y, x1 + sectionWidth * 2, y + sectionHeight)
+
+MachoMenuButton(SectionThree, "Close Menu", function()
+    if dui ~= nil then
+        MachoDestroyDui(dui)
+        dui = nil
+    end
+    MachoMenuDestroy(MenuWindow)
+end)
